@@ -15,48 +15,45 @@
 	;initialize the row counter
 	AND R4,R4,#0
 	ADD R4,R4,#15
-	AND R5,R5,#0
+	AND R6,R6,#0
 ;parse one character per loop
 ROW
-		
-CHARLP	
+	LD R5, STRBITS 
+CHARLP
+	LDR R1, R5, #0
+	BRz NEWROW
+	ADD R5,R5,#1; increment character pointer	
 	ADD R1,R1,R1 ; Multiply R1 by 16
 	ADD R1,R1,R1
 	ADD R1,R1,R1
 	ADD R1,R1,R1
-	LEA R6,FONT_DATA ; load the address of FONT_DATA into R6
-	ADD R1,R1,R6 ; add offset value
-
-	NOT R6,R4
-	ADD R6,R6,#1
-	ADD R6,R6,#15
+	LEA R7,FONT_DATA ; load the address of FONT_DATA into R6
+	ADD R1,R1,R7 ; add offset value
 	ADD R1,R1,R6
-
 	LDR R2,R1,#0 ;
-	BRz NEWROW
 
 	AND R3,R3,#0 ; initialize column counter
 	ADD R3,R3,#7
 
-COLUMN	ADD R2,R2,#0
-	BRn ONE
-
-ZERO	LDI R0,ZEROBITS
+COLUMN	
+	ADD R2,R2,#0
+	BRn ONE	
+	LDI R0,ZEROBITS
+	BRnzp PRINT
+ONE	
+	LDI R0,ONEBITS
 	BRnzp PRINT
 
-ONE	LDI R0,ONEBITS
-	BRnzp PRINT
-
-PRINT	ADD R2,R2,R2; left shift to test next bit
+PRINT	
+	OUT
+	ADD R2,R2,R2; left shift to test next bit
 	ADD R3,R3,#-1; decrement column counter
+	BRn CHARLP
+	BRnzp COLUMN
+NEWROW	
+	LD R0,LINEFEED ; end of row, prepare printing 
 	OUT
-	BRzp COLUMN ; reiterate the column loop to test next bit
-	ADD R5,R5,#1; increment character pointer
-	LDR R1,R5,#0; load next character into R1
-	BRnp CHARLP ; if not zero, loop again
-
-NEWROW	LD R0,LINEFEED ; end of row, prepare printing 
-	OUT
+	ADD R6,R6,#1
 	ADD R4,R4,#-1; decrement row counter
 	BRzp ROW ; loop again
 
